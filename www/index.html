@@ -17,7 +17,8 @@
     </a>
     <div class="nav-links">
         <a href="#" class="nav-link active">Transferir</a>
-        <a href="#" class="nav-link">Historial</a>
+        <a href="#" class="nav-link pc-only" onclick="mostrarQR()">Vincular Celular</a>
+        <a href="#" class="nav-link mobile-only" onclick="scanearQR()">📷 Escanear PC</a>
     </div>
     </nav>
 
@@ -79,6 +80,16 @@
     navigator.serviceWorker.register("/service-worker.js");
     }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="script.js" defer></script>
+    
+    <div id="qr-modal" class="modal-overlay hidden">
+    <div class="qr-card">
+        <h3>Vincular Dispositivo</h3>
+        <div id="qrcode-canvas"></div>
+        <p>Escaneá este código desde la App móvil</p>
+        <button class="btn-primary" onclick="toggleQR()">Cerrar</button>
+        </div>
+    </div>
 </body>
 </html>

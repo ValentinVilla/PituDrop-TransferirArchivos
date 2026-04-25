@@ -2,5 +2,9 @@
   "appId": "com.pitudrop.app",
   "appName": "PituDrop",
   "webDir": "www",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "http",
+    "allowNavigation": ["192.168.0.4"]
+  }
 }

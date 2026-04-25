@@ -2,6 +2,7 @@ const ip = require('ip');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const cors = require('cors'); 
 
 const app = express();
 const PORT = 3000;
@@ -27,9 +28,14 @@ const qrcode = require('qrcode-terminal');
 const upload = multer({ storage });
 
 app.use(express.static(__dirname)); 
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/get-ip', (req, res) => {
+    res.json({ ip: `http://${ip.address()}:${PORT}` });
 });
 
 // Endpoint para subir archivo
