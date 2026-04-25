@@ -32,15 +32,28 @@ const icon = document.getElementById('icon');
 document.addEventListener('DOMContentLoaded', () => {
     const iconElement = document.getElementById('icon');
     
+    const pcOnlyLinks = document.querySelectorAll('.pc-only');
+    const mobileOnlyLinks = document.querySelectorAll('.mobile-only');
+
     if (esPC) {
         document.getElementById('instruction').innerText = "Compartir archivos con el celular";
         const btnPrimary = document.querySelector('.btn-primary');
         if (btnPrimary) btnPrimary.innerText = "Compartir al Celu";
-        // Ícono para PC según tu pedido
         if (iconElement) iconElement.innerText = "🖥️ -> 📱"; 
+
+        // Mostrar SOLO los botones de PC
+        pcOnlyLinks.forEach(link => link.style.display = "inline-block");
+        mobileOnlyLinks.forEach(link => link.style.display = "none");
     } else {
-        // Ícono para Celular
         if (iconElement) iconElement.innerText   = "📱 -> 🖥️";
+
+        // Mostrar SOLO los botones de celu
+        pcOnlyLinks.forEach(link => link.style.display = "none");
+        mobileOnlyLinks.forEach(link => {
+            link.style.display = "inline-block";
+            link.style.color = "var(--primary)";
+            link.style.fontWeight = "bold";
+        });
     }
 });
 

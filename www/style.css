@@ -261,16 +261,6 @@ footer {
     text-shadow: 0 0 8px rgba(157, 78, 221, 0.6);
 }
 
-/* Por defecto, ocultamos el de escanear */
-.mobile-only {
-    display: none !important;
-}
-
-/* En la PC, mostramos el de 'Vincular' */
-.pc-only {
-    display: inline-block;
-}
-
 /* --- UI/UX DE LA LISTA DE DESCARGAS --- */
 #lista-descargas {
     display: flex;
@@ -393,13 +383,5 @@ footer {
 @media (max-height: 800px) {
     .app-container {
         margin-top: 80px; 
-    }
-    .pc-only {
-        display: none !important;
-    }
-    .mobile-only {
-        display: inline-block !important;
-        color: var(--primary) !important; /* Para que resalte el icono */
-        font-weight: bold;
     }
 }
