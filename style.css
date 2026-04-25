@@ -1,0 +1,236 @@
+:root {
+    --primary: #9d4edd; 
+    --bg: #121212; 
+    --card: rgba(30, 30, 35, 0.75); 
+    --text: #f5f5f7; 
+    --border: #3a3a44;
+    --text-muted: #a0a0ab; 
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    padding-bottom: 50px;
+}
+
+.cat-container {
+    position: absolute;
+    top: -120px; /* lo hace salir del borde */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.cat-container lottie-player {
+    width: 140px;
+    height: 140px;
+}
+
+#instruction, #statusText, footer, .nav-link {
+    color: var(--text-muted);
+}
+
+.app-container {
+    position: relative;
+    width: 90%;
+    max-width: 400px;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    background: #34c759;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34c759;
+}
+
+h1 { font-size: 1.2rem; margin: 0; font-weight: 600; }
+
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    padding: 40px 20px;
+    transition: all 0.3s ease;
+}
+
+.icon-box {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-primary:active { transform: scale(0.95); }
+
+/* Progreso */
+.hidden { display: none; }
+
+.progress-wrapper {
+    width: 100%;
+    height: 8px;
+    background: #e5e5ea;
+    border-radius: 4px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.1s;
+}
+
+#statusText {
+    font-size: 0.8rem;
+    color: #8e8e93;
+    margin-top: 8px;
+}
+
+footer {
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: #8e8e93;
+}
+
+/* --- ESTILOS DE LA NAVBAR --- */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%; 
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 1000;
+}
+
+.nav-logo-img {
+    width: 45px;     
+    height: 45px;   
+    object-fit: contain;
+    border-radius: 50%; 
+    flex-shrink: 0;  
+}
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none; /* clave */
+    color: inherit; /* mantiene el color */
+    cursor: pointer;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-brand:hover .nav-title {
+    text-shadow: 0 0 15px rgba(157, 78, 221, 0.8);
+}
+
+.nav-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #8e8e93;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--primary);
+}
+
+.app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    padding: 10px 5%;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(157, 78, 221, 0.2);
+    font-size: 0.8rem;
+    z-index: 1000;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+}
+
+.footer-content strong {
+    color: var(--primary);
+}
+
+.footer-links {
+    display: flex;
+    gap: 15px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+    text-shadow: 0 0 8px rgba(157, 78, 221, 0.6);
+}
+
+@media (max-height: 500px) {
+    .app-container {
+        margin-top: 80px; 
+    }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>File Transfer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+    <a href="/" class="nav-brand">
+    <img src="logo.png" alt="PituDrop Logo" class="nav-logo-img" onerror="this.style.display='none'">
+    <span class="nav-title">PituDrop</span>
+    </a>
+    <div class="nav-links">
+        <a href="#" class="nav-link active">Transferir</a>
+        <a href="#" class="nav-link">Historial</a>
+    </div>
+    </nav>
+
+    <div class="app-container">
+        <div class="cat-container">
+        <lottie-player 
+            src="cat.json"
+            background="transparent"
+            speed="1"
+            style="width: 120px; height: 120px;"
+            loop
+            autoplay>
+        </lottie-player>
+        </div>  
+        <header>
+        <div class="status-dot" id="dot"></div>
+        <h1>PituDrop</h1>
+        </header>
+
+        <main class="drop-zone">
+            <div class="icon-box">
+                <span id="icon">📤</span>
+            </div>
+            
+            <p id="instruction">Toca para seleccionar un archivo</p>
+            
+            <input type="file" id="fileInput" hidden>
+            <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                Elegir Archivo
+            </button>
+
+            <div id="progressContainer" class="hidden">
+                <div class="progress-wrapper">
+                    <div id="progressBar" class="progress-fill"></div>
+                </div>
+                <p id="statusText">Enviando... 0%</p>
+            </div>
+        </main>
+
+        <footer id="message">
+            Esperando archivo...
+        </footer>
+    </div>
+
+    <footer class="app-footer">
+    <div class="footer-content">
+        <span>Creado por <strong>Valentín Villanueva</strong></span>
+        
+        <div class="footer-links">
+            <a href="https://github.com/ValentinVilla" target="_blank">GitHub</a>
+            <a href="mailto:valen.villanuevaaa@gmail.com">Contacto</a>
+        </div>
+    </div>
+    </footer>   
+
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
