@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (iconElement) iconElement.innerText = "🖥️ -> 📱"; 
     } else {
         // Ícono para Celular
-        if (iconElement) iconElement.innerText = "📱 -> 🖥️";
+        if (iconElement) iconElement.innerText   = "📱 -> 🖥️";
     }
 });
 
@@ -187,17 +187,18 @@ function mostrarPantallaDescargas() {
                         <span class="file-name" title="${file}">${file}</span>
                         <span class="file-type">Archivo ${ext.toUpperCase()}</span>
                     </div>
-                    <a href="${downloadUrl}" download="${file}" class="btn-download">Bajar</a>
+                    <div class="action-buttons">
+                        <a href="${downloadUrl}" download="${file}" class="btn-download">Bajar</a>
+                        <button class="btn-delete" title="Eliminar archivo">🗑️</button>
+                    </div>
                 `;
                 container.appendChild(item);
 
-                // --- EL TRUCO PARA EL CELULAR ---
-                // Si NO es la PC (o sea, es el celu), interceptamos el click del botón
+                // --- LÓGICA DE DESCARGA (CELULAR) ---
                 if (!esPC) {
                     const btnBajar = item.querySelector('.btn-download');
                     btnBajar.addEventListener('click', async (e) => {
-                        e.preventDefault(); // Bloqueamos el comportamiento normal que falla en Android
-                        
+                        e.preventDefault(); 
                         if (window.Capacitor && window.Capacitor.Plugins.Browser) {
                             // Le tiramos el enlace al Chrome de Android para que lo descargue
                             await window.Capacitor.Plugins.Browser.open({ url: downloadUrl });
@@ -206,7 +207,36 @@ function mostrarPantallaDescargas() {
                         }
                     });
                 }
-            });
+                
+                // --- LÓGICA DEL TACHO DE BASURA ---
+                const btnDelete = item.querySelector('.btn-delete');
+                btnDelete.addEventListener('click', async () => {
+                    // Confirmación de seguridad
+                    if (confirm(`¿Seguro que querés borrar "${file}" de la PC?`)) {
+                        try {
+                            const response = await fetch(`${SERVER_URL}/delete-file/${encodeURIComponent(file)}`, {
+                                method: 'DELETE'
+                            });
+
+                            if (response.ok) {
+                                // Animación de desaparición
+                                item.style.opacity = "0";
+                                setTimeout(() => {
+                                    item.remove();
+                                    // Si la lista queda vacía, mostramos el mensaje
+                                    if (container.children.length === 0) {
+                                        container.innerHTML = "<p>No hay archivos compartidos por la PC.</p>";
+                                    }
+                                }, 300);
+                            } else {
+                                alert("No se pudo borrar el archivo.");
+                            }
+                        } catch (error) {
+                            alert("Error de conexión al intentar borrar.");
+                        }
+                    }
+                });
+            }); // Cierre del forEach
         })
         .catch(err => {
             document.getElementById('lista-descargas').innerHTML = "<p>Error al conectar con la PC.</p>";

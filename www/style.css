@@ -363,6 +363,33 @@ footer {
     transform: scale(0.95);
 }
 
+/* --- BOTONES DE ACCIÓN (BAJAR Y BORRAR) --- */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0; /* Evita que los botones se aplasten si el nombre es largo */
+}
+
+.btn-delete {
+    background: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: rgba(255, 59, 48, 0.25);
+    transform: scale(0.95);
+}
+
 @media (max-height: 800px) {
     .app-container {
         margin-top: 80px; 

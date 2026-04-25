@@ -1,12 +1,13 @@
-const { app, BrowserWindow } = require('electron'); // Este es el 'app' de Electron
-const startPituDropServer = require('./www/index'); // Importamos la función
+const { app, BrowserWindow } = require('electron'); 
+const path = require('path');
+const startPituDropServer = require('./www/index'); 
 
 function createWindow() {
     const win = new BrowserWindow({
         width: 450,
         height: 750,
         title: "PituDrop",
-        icon: __dirname + '/logo.png', // Si tenés el logo
+        icon: path.join(__dirname, 'resources', 'icon.png'),
         autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: false
@@ -16,7 +17,7 @@ function createWindow() {
     win.loadURL('http://localhost:3000');
 }
 
-// Iniciamos el servidor de Express antes de abrir la ventana
+// Se inicia el servidor de Express antes de abrir la ventana
 app.whenReady().then(() => {
     startPituDropServer(); 
     createWindow();
