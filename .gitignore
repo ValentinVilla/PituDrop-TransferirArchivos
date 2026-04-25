@@ -1,4 +1,20 @@
+# Dependencias de Node
 node_modules/
+npm-debug.log*
+
+# Archivos de subida (No queremos tus archivos personales en GitHub)
 uploads/*
 !uploads/.gitkeep
+
+# Android / Capacitor (Generalmente se generan localmente)
+# Si querés que otros puedan compilar tu app fácil, podés NO ignorar 'android'
+# Pero lo estándar es ignorar las carpetas de compilación
+android/app/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+
+# Archivos del Sistema
+.DS_Store
+Thumbs.db
 .env

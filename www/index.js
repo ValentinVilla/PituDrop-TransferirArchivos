@@ -26,10 +26,10 @@ const storage = multer.diskStorage({
 const qrcode = require('qrcode-terminal');
 const upload = multer({ storage });
 
-app.use(express.static(__dirname));
-// Servir HTML
+app.use(express.static(__dirname)); 
+
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Endpoint para subir archivo
@@ -37,10 +37,18 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.send('Archivo recibido correctamente 🚀');
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    const localUrl = `http://${ip.address()}:${PORT}`;
-    console.log(`Servidor corriendo en: ${localUrl}`);
-    console.log(`Anunciando servicio como 'FileTransferServer.local'`);
-    // Genera el código QR en la consola
-    qrcode.generate(localUrl, { small: true });
-});
+const startServer = () => {
+    app.listen(PORT, '0.0.0.0', () => {
+        const localUrl = `http://${ip.address()}:${PORT}`;
+        console.log(`Servidor PituDrop en: ${localUrl}`);
+        qrcode.generate(localUrl, { small: true });
+    });
+};
+
+// Exportamos la función para que Electron la use
+module.exports = startServer;
+
+// Si querés seguir pudiendo ejecutarlo solo con node, agregá esto:
+if (require.main === module) {
+    startServer();
+}

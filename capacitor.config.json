@@ -1,0 +1,6 @@
+{
+  "appId": "com.pitudrop.app",
+  "appName": "PituDrop",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
