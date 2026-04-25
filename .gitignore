@@ -2,6 +2,9 @@
 node_modules/
 npm-debug.log*
 
+# Carpeta de compilación de Electron
+dist/
+
 # Archivos de subida (No queremos tus archivos personales en GitHub)
 uploads/*
 !uploads/.gitkeep
@@ -17,6 +20,16 @@ android/.idea/
 # Ignorar contenido de descargas pero mantener la carpeta
 www/downloads/*
 !www/downloads/.gitkeep
+
+# Archivos temporales de descarga
+downloads/
+uploads/
+
+# Archivos de sistema y logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
 
 # Archivos del Sistema
 .DS_Store

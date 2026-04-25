@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors'); 
 const fs = require('fs');
+const os = require('os');
 
 const app = express();
 const PORT = 3000;
@@ -14,20 +15,32 @@ const bonjour = new Bonjour();
 bonjour.publish({ name: 'FileTransferServer', type: 'http', port: PORT });
 console.log(`Anunciando servicio como 'FileTransferServer.local'`);
 
-// Crear la carpeta de descargas si no existe
-const downloadPath = path.join(__dirname, 'downloads');
 
-if (!fs.existsSync(downloadPath)) {
-    fs.mkdirSync(downloadPath);
-}
+const homeDir = os.homedir();
+const downloadPath = path.join(homeDir, 'Downloads', 'PituDrop'); 
+const uploadPath = path.join(homeDir, 'Downloads', 'PituDrop', 'Recibidos');
+
+// Crear la carpeta de descargas si no existe
+//const downloadPath = path.join(__dirname, 'downloads');
+
+//if (!fs.existsSync(downloadPath)) {
+ //   fs.mkdirSync(downloadPath);
+//}
+
+// Crear las carpetas si no existen (esto ahora funcionará siempre)
+[downloadPath, uploadPath].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
 
 // Configuración de dónde guardar archivos cel -> pc
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        cb(null, Date.now() + '-' + file.originalname);
     }
 });
 const upload = multer({ storage });
@@ -51,7 +64,7 @@ const qrcode = require('qrcode-terminal');
 
 app.use(express.static(__dirname)); 
 app.use(cors());
-app.use('/public-downloads', express.static(path.join(__dirname, 'downloads')));
+app.use('/public-downloads', express.static(downloadPath));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -76,18 +89,26 @@ app.post('/pc-share', uploadFromPC.single('file'), (req, res) => {
 app.get('/list-downloads', (req, res) => {
     fs.readdir(downloadPath, (err, files) => {
         if (err) return res.status(500).json([]);
-        const archivosVisibles = files.filter(file => !file.startsWith('.'));
-        const archivosOrdenados = archivosVisibles
+
+        // 1. Filtramos: quitamos archivos ocultos y evitamos que las CARPETAS (como 'Recibidos') salgan en la lista
+        const archivosFiltrados = files.filter(file => {
+            const filePath = path.join(downloadPath, file);
+            const esArchivo = fs.lstatSync(filePath).isFile();
+            return !file.startsWith('.') && esArchivo;
+        });
+
+        // 2. Mapeamos y ordenamos por fecha de modificación
+        const archivosOrdenados = archivosFiltrados
             .map(file => {
                 const filePath = path.join(downloadPath, file);
-                const stats = fs.statSync(filePath); // Obtenemos la info del archivo
+                const stats = fs.statSync(filePath);
                 return {
                     name: file,
-                    time: stats.mtime.getTime() // mtime = modified time (fecha y hora en milisegundos)
+                    time: stats.mtime.getTime()
                 };
             })
-            .sort((a, b) => b.time - a.time) // Ordenamos del más nuevo (b) al más viejo (a)
-            .map(fileObj => fileObj.name); // Volvemos a dejar solo la lista de nombres para el frontend
+            .sort((a, b) => b.time - a.time) // Del más nuevo al más viejo
+            .map(fileObj => fileObj.name);
             
         res.json(archivosOrdenados);
     });
