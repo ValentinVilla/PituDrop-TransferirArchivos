@@ -14,6 +14,10 @@ android/.gradle/
 android/local.properties
 android/.idea/
 
+# Ignorar contenido de descargas pero mantener la carpeta
+www/downloads/*
+!www/downloads/.gitkeep
+
 # Archivos del Sistema
 .DS_Store
 Thumbs.db

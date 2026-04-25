@@ -1,3 +1,26 @@
+// 1. DETECCIÓN INFALIBLE: Si NO hay Capacitor, estamos 100% seguros de que es la PC
+const esPC = !window.Capacitor;
+
+// 2. CONFIGURACIÓN DE URL A PRUEBA DE BALAS
+let SERVER_URL = "";
+if (esPC) {
+    // La PC SIEMPRE le habla a su propio puerto local, evitamos el error de "file://"
+    SERVER_URL = "http://localhost:3000";
+} else {
+    // El celular usa la IP descubierta por el QR
+    let savedIP = localStorage.getItem('pitu_ip');
+    SERVER_URL = savedIP || ""; 
+    
+    // Fallback por si lo abrís en un navegador móvil sin IP guardada
+    if (!savedIP && window.location.hostname === 'localhost') {
+        const nuevaIP = prompt("Por favor, ingresá la IP de tu PC (ej: http://192.168.0.4:3000):");
+        if (nuevaIP) {
+            localStorage.setItem('pitu_ip', nuevaIP);
+            SERVER_URL = nuevaIP;
+        }
+    }
+}
+
 const fileInput = document.getElementById('fileInput');
 const progressBar = document.getElementById('progressBar');
 const progressContainer = document.getElementById('progressContainer');
@@ -5,18 +28,21 @@ const statusText = document.getElementById('statusText');
 const message = document.getElementById('message');
 const icon = document.getElementById('icon');
 
-// Intentamos obtener la IP guardada, si no, usamos la actual del navegador
-let savedIP = localStorage.getItem('pitu_ip');
-let SERVER_URL = savedIP || window.location.origin;
-
-// Si estamos en el celular (App nativa) y no tenemos IP guardada
-if (window.location.protocol === 'http:' && !savedIP && window.location.hostname === 'localhost') {
-    const nuevaIP = prompt("Por favor, ingresá la IP de tu PC (ej: http://192.168.1.15:3000):");
-    if (nuevaIP) {
-        localStorage.setItem('pitu_ip', nuevaIP);
-        SERVER_URL = nuevaIP;
+// Ajustar interfaz al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    const iconElement = document.getElementById('icon');
+    
+    if (esPC) {
+        document.getElementById('instruction').innerText = "Compartir archivos con el celular";
+        const btnPrimary = document.querySelector('.btn-primary');
+        if (btnPrimary) btnPrimary.innerText = "Compartir al Celu";
+        // Ícono para PC según tu pedido
+        if (iconElement) iconElement.innerText = "🖥️ -> 📱"; 
+    } else {
+        // Ícono para Celular
+        if (iconElement) iconElement.innerText = "📱 -> 🖥️";
     }
-}
+});
 
 fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
@@ -28,9 +54,8 @@ function toggleQR() {
     document.getElementById("qr-modal").classList.toggle("hidden");
 }
 
-// Modificamos mostrarQR para que use toggle
 function mostrarQR() {
-    fetch('/get-ip')
+    fetch('http://localhost:3000/get-ip')
         .then(res => res.json())
         .then(data => {
             const qrContainer = document.getElementById("qrcode-canvas");
@@ -43,8 +68,9 @@ function mostrarQR() {
             toggleQR();
         });
 }
+
 async function scanearQR() {
-    if (!window.Capacitor || !window.Capacitor.Plugins.BarcodeScanner) {
+    if (esPC) {
         alert("El escáner solo funciona en la App móvil");
         return;
     }
@@ -58,88 +84,143 @@ async function scanearQR() {
     if (barcodes.length > 0) {
         let rawData = barcodes[0].displayValue;
 
-        // Buscamos dónde empieza realmente la URL (donde diga http)
         const inicioURL = rawData.indexOf("http");
-        
         if (inicioURL !== -1) {
-            // Cortamos todo lo anterior (pitudrop:, espacios, etc)
             const ipLimpia = rawData.substring(inicioURL).trim();
-            
             localStorage.setItem('pitu_ip', ipLimpia);
             SERVER_URL = ipLimpia;
             
             alert("¡Conectado exitosamente!");
-            location.reload(); // Recargamos para que SERVER_URL tome el nuevo valor
+            location.reload(); 
         } else {
             alert("QR no reconocido");
         }
     }
 }
-/*
-async function scanearQR() {
-    if (!window.Capacitor || !window.Capacitor.Plugins.BarcodeScanner) {
-        alert("El escáner solo funciona en la App móvil");
-        return;
-    }
 
-    const { BarcodeScanner } = window.Capacitor.Plugins;
-    
-    const granted = await BarcodeScanner.requestPermissions();
-    if (!granted) return;
-
-    const { barcodes } = await BarcodeScanner.scan();
-    const data = barcodes[0].displayValue;
-
-    if (data.startsWith('pitudrop:')) {
-        const ipDescubierta = data.split(':')[1] + ":" + data.split(':')[2];
-        localStorage.setItem('pitu_ip', ipDescubierta);
-        SERVER_URL = ipDescubierta;
-        alert("¡Conectado a PituDrop PC!");
-        location.reload();
-    }
-}
-*/
 function uploadFile(file) {
     const formData = new FormData();
     formData.append("file", file);
 
     const xhr = new XMLHttpRequest();
     
-    // Configuración visual inicial
+    // CLAVE: Si es PC va a descargas, si es celu va a uploads
+    const endpoint = esPC ? "/pc-share" : "/upload";
+
     progressContainer.classList.remove('hidden');
     message.innerText = "Subiendo " + file.name;
     icon.innerText = "⏳";
 
-    xhr.open("POST", SERVER_URL + "/upload");
+    xhr.open("POST", SERVER_URL + endpoint);
 
-    // Progreso de carga
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
             const percent = Math.round((event.loaded / event.total) * 100);
             progressBar.style.width = percent + "%";
-            statusText.innerText = `Enviando... ${percent}%`;
+            statusText.innerText = esPC ? `Enviando al celu... ${percent}%` : `Enviando a PC... ${percent}%`;
         }
     };
 
-    // Al finalizar
     xhr.onload = () => {
         if (xhr.status === 200) {
             icon.innerText = "✅";
-            message.innerText = "¡Archivo recibido!";
+            message.innerText = esPC ? "¡Listo! Revisalo en tu celu." : "¡Archivo recibido!";
             statusText.innerText = "Completado al 100%";
-            setTimeout(resetUI, 3000);
+            setTimeout(() => {
+                resetUI();
+            }, 4000);
         } else {
-            message.innerText = "Error al subir ❌";
+            message.innerText = "Error en la transferencia ❌";
         }
     };
 
     xhr.send(formData);
 }
 
+// --- LÓGICA DE DESCARGAS ---
+const btnDescargas = document.getElementById('btn-descargas');
+const dropZone = document.querySelector('.drop-zone'); 
+
+if (btnDescargas) {
+    btnDescargas.addEventListener('click', (e) => {
+        e.preventDefault();
+        mostrarPantallaDescargas();
+    });
+}
+
+
+function mostrarPantallaDescargas() {
+    // 1. Cambiamos la UI
+    document.getElementById('instruction').innerText = "Archivos disponibles";
+    dropZone.innerHTML = '<div id="lista-descargas">Cargando archivos...</div>';
+    
+    // 2. Pedimos la lista al servidor
+    fetch(SERVER_URL + '/list-downloads')
+        .then(res => res.json())
+        .then(files => {
+            const container = document.getElementById('lista-descargas');
+            if (files.length === 0) {
+                container.innerHTML = "<p>No hay archivos compartidos por la PC.</p>";
+                return;
+            }
+            container.innerHTML = ""; // Limpiamos el "Cargando"
+            
+            files.forEach(file => {
+                const item = document.createElement('div');
+                item.className = "download-item";
+                
+                // --- Lógica de UX/UI para detectar imágenes ---
+                const ext = file.split('.').pop().toLowerCase();
+                const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext);
+                const fileUrl = `${SERVER_URL}/public-downloads/${file}`;
+                const downloadUrl = `${SERVER_URL}/download-file/${encodeURIComponent(file)}`;
+                
+                // Si es imagen, mostramos el preview. Si no, un icono de documento.
+                let previewHtml = isImage 
+                    ? `<img src="${fileUrl}" class="file-preview" alt="preview">` 
+                    : `<div class="file-icon">📄</div>`;
+
+                // Inyectamos el HTML usando la etiqueta <a> (Perfecto para la PC)
+                item.innerHTML = `
+                    ${previewHtml}
+                    <div class="file-info">
+                        <span class="file-name" title="${file}">${file}</span>
+                        <span class="file-type">Archivo ${ext.toUpperCase()}</span>
+                    </div>
+                    <a href="${downloadUrl}" download="${file}" class="btn-download">Bajar</a>
+                `;
+                container.appendChild(item);
+
+                // --- EL TRUCO PARA EL CELULAR ---
+                // Si NO es la PC (o sea, es el celu), interceptamos el click del botón
+                if (!esPC) {
+                    const btnBajar = item.querySelector('.btn-download');
+                    btnBajar.addEventListener('click', async (e) => {
+                        e.preventDefault(); // Bloqueamos el comportamiento normal que falla en Android
+                        
+                        if (window.Capacitor && window.Capacitor.Plugins.Browser) {
+                            // Le tiramos el enlace al Chrome de Android para que lo descargue
+                            await window.Capacitor.Plugins.Browser.open({ url: downloadUrl });
+                        } else {
+                            alert("Error: Plugin de navegador no disponible.");
+                        }
+                    });
+                }
+            });
+        })
+        .catch(err => {
+            document.getElementById('lista-descargas').innerHTML = "<p>Error al conectar con la PC.</p>";
+        });
+}
+
 function resetUI() {
     progressContainer.classList.add('hidden');
     progressBar.style.width = "0%";
-    icon.innerText = "📤";
+
+    icon.innerText = esPC ? "🖥️ -> 📱" : "📱 -> 🖥️";
+    
     message.innerText = "Esperando archivo...";
-    fileInput.value = ""; // Limpiar input
+    if (document.getElementById('fileInput')) {
+        document.getElementById('fileInput').value = ""; 
+    }
 }

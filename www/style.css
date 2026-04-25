@@ -271,6 +271,97 @@ footer {
     display: inline-block;
 }
 
+/* --- UI/UX DE LA LISTA DE DESCARGAS --- */
+#lista-descargas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 280px; /* Evita que la tarjeta crezca hasta el infinito */
+    overflow-y: auto;
+    padding-right: 5px;
+    text-align: left; /* Quitamos el centrado para la lista */
+}
+
+/* Scrollbar personalizada para que quede linda */
+#lista-descargas::-webkit-scrollbar {
+    width: 6px;
+}
+#lista-descargas::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.download-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03); /* Fondo sutil */
+    padding: 10px;
+    border-radius: 12px;
+    gap: 12px;
+    border: 1px solid rgba(157, 78, 221, 0.15); /* Borde violeta suave */
+    transition: background 0.2s;
+}
+
+.download-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.file-preview {
+    width: 45px;
+    height: 45px;
+    object-fit: cover; /* Recorta la imagen para que quede cuadrada perfecta */
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.file-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(157, 78, 221, 0.1);
+    border-radius: 8px;
+    font-size: 24px;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Ocupa el espacio del medio */
+    overflow: hidden; /* Clave para que el texto no empuje al botón */
+}
+
+.file-name {
+    font-size: 0.9rem;
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Pone los "..." si el nombre es muy largo */
+}
+
+.file-type {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.btn-download {
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: transform 0.2s, background 0.2s;
+    flex-shrink: 0; /* Evita que el botón se aplaste */
+}
+
+.btn-download:active {
+    transform: scale(0.95);
+}
 
 @media (max-height: 800px) {
     .app-container {
