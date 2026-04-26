@@ -1,66 +1,62 @@
-// 1. DETECCIÓN INFALIBLE: Si NO hay Capacitor, estamos 100% seguros de que es la PC
 const esPC = !window.Capacitor;
 
-// 2. CONFIGURACIÓN DE URL A PRUEBA DE BALAS
-let SERVER_URL = "";
-if (esPC) {
-    // La PC SIEMPRE le habla a su propio puerto local, evitamos el error de "file://"
-    SERVER_URL = "http://localhost:3000";
-} else {
-    // El celular usa la IP descubierta por el QR
-    let savedIP = localStorage.getItem('pitu_ip');
-    SERVER_URL = savedIP || ""; 
-    
-    // Fallback por si lo abrís en un navegador móvil sin IP guardada
-    if (!savedIP && window.location.hostname === 'localhost') {
-        const nuevaIP = prompt("Por favor, ingresá la IP de tu PC (ej: http://192.168.0.4:3000):");
-        if (nuevaIP) {
-            localStorage.setItem('pitu_ip', nuevaIP);
-            SERVER_URL = nuevaIP;
-        }
-    }
-}
+let SERVER_URL = esPC ? "http://localhost:3000" : (localStorage.getItem('pitu_ip') || "");
 
-const fileInput = document.getElementById('fileInput');
-const progressBar = document.getElementById('progressBar');
-const progressContainer = document.getElementById('progressContainer');
-const statusText = document.getElementById('statusText');
-const message = document.getElementById('message');
-const icon = document.getElementById('icon');
+// Declaramos las variables pero las asignamos después del DOM
+let fileInput, progressBar, progressContainer, statusText, message, icon;
 
-// Ajustar interfaz al cargar
 document.addEventListener('DOMContentLoaded', () => {
-    const iconElement = document.getElementById('icon');
-    
-    const pcOnlyLinks = document.querySelectorAll('.pc-only');
+    // Asignamos TODAS las referencias acá, cuando el DOM ya existe
+    fileInput        = document.getElementById('fileInput');
+    progressBar      = document.getElementById('progressBar');
+    progressContainer = document.getElementById('progressContainer');
+    statusText       = document.getElementById('statusText');
+    message          = document.getElementById('instruction'); // ← 'instruction', no 'message'
+    icon             = document.getElementById('icon');
+
+    const pcOnlyLinks   = document.querySelectorAll('.pc-only');
     const mobileOnlyLinks = document.querySelectorAll('.mobile-only');
 
     if (esPC) {
-        document.getElementById('instruction').innerText = "Compartir archivos con el celular";
+        message.innerText = "Compartir archivos con el celular";
         const btnPrimary = document.querySelector('.btn-primary');
         if (btnPrimary) btnPrimary.innerText = "Compartir al Celu";
-        if (iconElement) iconElement.innerText = "🖥️ -> 📱"; 
-
-        // Mostrar SOLO los botones de PC
-        pcOnlyLinks.forEach(link => link.style.display = "inline-block");
-        mobileOnlyLinks.forEach(link => link.style.display = "none");
+        if (icon) icon.innerText = "🖥️ -> 📱";
+        pcOnlyLinks.forEach(l => l.style.display = "inline-block");
+        mobileOnlyLinks.forEach(l => l.style.display = "none");
     } else {
-        if (iconElement) iconElement.innerText   = "📱 -> 🖥️";
-
-        // Mostrar SOLO los botones de celu
-        pcOnlyLinks.forEach(link => link.style.display = "none");
-        mobileOnlyLinks.forEach(link => {
-            link.style.display = "inline-block";
-            link.style.color = "var(--primary)";
-            link.style.fontWeight = "bold";
+        if (icon) icon.innerText = "📱 -> 🖥️";
+        pcOnlyLinks.forEach(l => l.style.display = "none");
+        mobileOnlyLinks.forEach(l => {
+            l.style.display = "inline-block";
+            if (l.id !== 'btn-vincular') {  // ← no tocar el color de btn-vincular
+                l.style.color = "var(--primary)";
+            }
+            l.style.fontWeight = "bold";
         });
+        actualizarBtnVincular();
     }
-});
 
-fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
-        uploadFile(fileInput.files[0]);
-    }
+    // El listener del fileInput también va acá adentro
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) uploadFile(fileInput.files[0]);
+    });
+
+    // Drag & drop
+    const dropArea = document.querySelector('.drop-zone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+        dropArea.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+    ['dragenter', 'dragover'].forEach(ev => {
+        dropArea.addEventListener(ev, () => dropArea.classList.add('drag-active'), false);
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+        dropArea.addEventListener(ev, () => dropArea.classList.remove('drag-active'), false);
+    });
+    dropArea.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) uploadFile(files[0]);
+    }, false);
 });
 
 function toggleQR() {
@@ -82,6 +78,36 @@ function mostrarQR() {
         });
 }
 
+function toggleVincular() {
+    const yaVinculado = !!localStorage.getItem('pitu_ip');
+    
+    if (yaVinculado) {
+        // Desvincular
+        if (confirm("¿Desvincular esta PC?")) {
+            localStorage.removeItem('pitu_ip');
+            SERVER_URL = "";
+            actualizarBtnVincular();
+        }
+    } else {
+        // Vincular
+        scanearQR();
+    }
+}
+
+function actualizarBtnVincular() {
+    const btn = document.getElementById('btn-vincular');
+    if (!btn) return;
+    
+    const yaVinculado = !!localStorage.getItem('pitu_ip');
+    if (yaVinculado) {
+        btn.innerText = "Vinculado";
+        btn.style.color = "#34c759";
+    } else {
+        btn.innerText = "Vincular PC";
+        btn.style.color = "var(--primary)";
+    }
+}
+
 async function scanearQR() {
     if (esPC) {
         alert("El escáner solo funciona en la App móvil");
@@ -90,24 +116,30 @@ async function scanearQR() {
 
     const { BarcodeScanner } = window.Capacitor.Plugins;
     
+    // 1. Pedir permisos
     const granted = await BarcodeScanner.requestPermissions();
     if (!granted) return;
 
+    // 2. Escanear
     const { barcodes } = await BarcodeScanner.scan();
     if (barcodes.length > 0) {
-        let rawData = barcodes[0].displayValue;
+        let rawData = barcodes[0].displayValue; // Ejemplo: "pitudrop:192.168.0.4:3000"
 
-        const inicioURL = rawData.indexOf("http");
-        if (inicioURL !== -1) {
-            const ipLimpia = rawData.substring(inicioURL).trim();
-            localStorage.setItem('pitu_ip', ipLimpia);
-            SERVER_URL = ipLimpia;
-            
-            alert("¡Conectado exitosamente!");
-            location.reload(); 
-        } else {
-            alert("QR no reconocido");
+        // 3. LÓGICA DE LIMPIEZA INTELIGENTE
+        // Borramos el prefijo "pitudrop:" si existe
+        let ipLimpia = rawData.replace("pitudrop:", "").trim();
+        
+        // Si la IP no tiene el http:// adelante, se lo ponemos para que el XHR no falle
+        if (!ipLimpia.startsWith("http")) {
+            ipLimpia = "http://" + ipLimpia;
         }
+
+        // 4. Guardar y Conectar
+        localStorage.setItem('pitu_ip', ipLimpia);
+        SERVER_URL = ipLimpia;
+        actualizarBtnVincular();
+        alert("¡Conectado exitosamente!");
+        location.reload(); 
     }
 }
 
@@ -116,32 +148,38 @@ function uploadFile(file) {
     formData.append("file", file);
 
     const xhr = new XMLHttpRequest();
-    
-    // CLAVE: Si es PC va a descargas, si es celu va a uploads
     const endpoint = esPC ? "/pc-share" : "/upload";
 
     progressContainer.classList.remove('hidden');
     message.innerText = "Subiendo " + file.name;
     icon.innerText = "⏳";
 
+    // Arranca con animación indeterminada
+    progressBar.classList.add('indeterminate');
+    progressBar.style.width = "0%";
+    statusText.innerText = esPC ? "Enviando al celu..." : "Enviando a PC...";
+
     xhr.open("POST", SERVER_URL + endpoint);
 
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
             const percent = Math.round((event.loaded / event.total) * 100);
-            progressBar.style.width = percent + "%";
-            statusText.innerText = esPC ? `Enviando al celu... ${percent}%` : `Enviando a PC... ${percent}%`;
+            if (percent > 0 && percent < 100) {
+                progressBar.classList.remove('indeterminate');
+                progressBar.style.width = percent + "%";
+                statusText.innerText = esPC ? `Enviando al celu... ${percent}%` : `Enviando a PC... ${percent}%`;
+            }
         }
     };
 
     xhr.onload = () => {
+        progressBar.classList.remove('indeterminate');
         if (xhr.status === 200) {
+            progressBar.style.width = "100%";
             icon.innerText = "✅";
             message.innerText = esPC ? "¡Listo! Revisalo en tu celu." : "¡Archivo recibido!";
             statusText.innerText = "Completado al 100%";
-            setTimeout(() => {
-                resetUI();
-            }, 4000);
+            setTimeout(() => resetUI(), 1800);
         } else {
             message.innerText = "Error en la transferencia ❌";
         }
@@ -256,13 +294,31 @@ function mostrarPantallaDescargas() {
         });
 }
 
+const btnAbrirLocal = document.getElementById('btn-abrir-descargas');
+
+if (btnAbrirLocal) {
+    btnAbrirLocal.addEventListener('click', (e) => {
+        e.preventDefault(); // Evita que la página recargue
+        
+        // Llamamos al endpoint del servidor para abrir la carpeta
+        fetch('http://localhost:3000/open-folder')
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo abrir la carpeta");
+            })
+            .catch(err => {
+                console.error("Error al intentar abrir la carpeta local:", err);
+                alert("Asegurate de que el servidor esté corriendo en la PC.");
+            });
+    });
+}
+
 function resetUI() {
     progressContainer.classList.add('hidden');
     progressBar.style.width = "0%";
 
     icon.innerText = esPC ? "🖥️ -> 📱" : "📱 -> 🖥️";
     
-    message.innerText = "Esperando archivo...";
+    message.innerText = esPC ? "Compartir archivos con el celular" : "Toca para seleccionar un archivo";
     if (document.getElementById('fileInput')) {
         document.getElementById('fileInput').value = ""; 
     }

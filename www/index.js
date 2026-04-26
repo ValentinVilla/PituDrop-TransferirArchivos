@@ -5,6 +5,7 @@ const path = require('path');
 const cors = require('cors'); 
 const fs = require('fs');
 const os = require('os');
+const { exec } = require('child_process');
 
 const app = express();
 const PORT = 3000;
@@ -19,13 +20,7 @@ console.log(`Anunciando servicio como 'FileTransferServer.local'`);
 const homeDir = os.homedir();
 const downloadPath = path.join(homeDir, 'Downloads', 'PituDrop'); 
 const uploadPath = path.join(homeDir, 'Downloads', 'PituDrop', 'Recibidos');
-
-// Crear la carpeta de descargas si no existe
-//const downloadPath = path.join(__dirname, 'downloads');
-
-//if (!fs.existsSync(downloadPath)) {
- //   fs.mkdirSync(downloadPath);
-//}
+const carpetaRecibidos = path.join(process.env.USERPROFILE, 'Downloads', 'PituDrop', 'Recibidos');
 
 // Crear las carpetas si no existen (esto ahora funcionará siempre)
 [downloadPath, uploadPath].forEach(dir => {
@@ -134,6 +129,20 @@ app.delete('/delete-file/:filename', (req, res) => {
     } else {
         res.status(404).send('Archivo no encontrado');
     }
+});
+
+app.get('/open-folder', (req, res) => {
+    if (!fs.existsSync(carpetaRecibidos)) {
+        fs.mkdirSync(carpetaRecibidos, { recursive: true });
+    }
+
+    exec(`start "" "${carpetaRecibidos}"`, (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error al abrir la carpeta");
+        }
+        res.send("Carpeta abierta");
+    });
 });
 
 const startServer = () => {

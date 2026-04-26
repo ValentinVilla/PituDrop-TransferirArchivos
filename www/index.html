@@ -16,10 +16,10 @@
     <span class="nav-title">PituDrop</span>
     </a>
     <div class="nav-links">
-        <a href="#" class="nav-link active pc-only">Transferir</a>
+        <a href="#" class="nav-link pc-only" id="btn-abrir-descargas">Recibidos</a>
         <a href="#" class="nav-link mobile-only" id="btn-descargas">Descargas</a>
         <a href="#" class="nav-link pc-only" onclick="mostrarQR()">Vincular Celular</a>
-        <a href="#" class="nav-link mobile-only" onclick="scanearQR()">📷 Escanear PC</a>
+        <a href="#" class="nav-link mobile-only" id="btn-vincular" onclick="toggleVincular()">Vincular PC</a>
     </div>
     </nav>
 
@@ -58,10 +58,6 @@
                 <p id="statusText">Enviando... 0%</p>
             </div>
         </main>
-
-        <footer id="message">
-            Esperando archivo...
-        </footer>
     </div>
 
     <footer class="app-footer">

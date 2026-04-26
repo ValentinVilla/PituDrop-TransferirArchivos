@@ -36,7 +36,13 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
-
+    <!-- Permisos necesarios para PituDrop -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- Hardware necesario para que el escáner sea compatible con más celus -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
 </manifest>
