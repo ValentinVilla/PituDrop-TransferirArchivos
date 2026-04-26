@@ -11,7 +11,7 @@
   "build": {
     "appId": "com.valentin.pitudrop",
     "productName": "PituDrop",
-    "asar": false, 
+    "asar": false,
     "win": {
       "target": "nsis",
       "icon": "resources/icon.ico"
@@ -43,6 +43,7 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "electron": "^41.3.0",
     "electron-builder": "^26.8.1"
   }
