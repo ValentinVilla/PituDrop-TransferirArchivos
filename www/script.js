@@ -60,7 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function toggleQR() {
-    document.getElementById("qr-modal").classList.toggle("hidden");
+    const modal = document.getElementById("qr-modal");
+    modal.classList.toggle("hidden");
+
+    // Al cerrar, resetea el estado para la próxima vez
+    if (modal.classList.contains("hidden")) {
+        document.getElementById('ip-display').classList.add('hidden');
+        document.getElementById('btn-revelar-ip').classList.remove('hidden');
+    }
 }
 
 function mostrarQR() {
@@ -74,6 +81,12 @@ function mostrarQR() {
                 width: 200,
                 height: 200
             });
+            
+            const ipDisplay = document.getElementById('ip-display');
+            if (ipDisplay) {
+                ipDisplay.innerText = data.ip.replace('http://', '');
+            }
+            
             toggleQR();
         });
 }
@@ -114,33 +127,117 @@ async function scanearQR() {
         return;
     }
 
-    const { BarcodeScanner } = window.Capacitor.Plugins;
-    
-    // 1. Pedir permisos
-    const granted = await BarcodeScanner.requestPermissions();
-    if (!granted) return;
+    // Intentamos con el scanner nativo
+    const scanner = window.Capacitor?.Plugins?.BarcodeScanner;
 
-    // 2. Escanear
-    const { barcodes } = await BarcodeScanner.scan();
-    if (barcodes.length > 0) {
-        let rawData = barcodes[0].displayValue; // Ejemplo: "pitudrop:192.168.0.4:3000"
+    if (scanner) {
+        try {
+            const granted = await scanner.requestPermissions();
+            if (!granted) throw new Error("Sin permisos");
 
-        // 3. LÓGICA DE LIMPIEZA INTELIGENTE
-        // Borramos el prefijo "pitudrop:" si existe
-        let ipLimpia = rawData.replace("pitudrop:", "").trim();
-        
-        // Si la IP no tiene el http:// adelante, se lo ponemos para que el XHR no falle
-        if (!ipLimpia.startsWith("http")) {
-            ipLimpia = "http://" + ipLimpia;
+            //throw new Error("TEST: simulando fallo de scanner");
+
+            const { barcodes } = await scanner.scan();
+
+            if (barcodes && barcodes.length > 0) {
+                procesarIP(barcodes[0].displayValue);
+                return; // Éxito, salimos
+            }
+            // Si llegamos acá, el scan no devolvió nada (bug Samsung)
+            throw new Error("Sin resultado");
+
+        } catch (err) {
+            console.warn("Scanner nativo falló, mostrando fallback manual:", err);
         }
-
-        // 4. Guardar y Conectar
-        localStorage.setItem('pitu_ip', ipLimpia);
-        SERVER_URL = ipLimpia;
-        actualizarBtnVincular();
-        alert("¡Conectado exitosamente!");
-        location.reload(); 
     }
+
+    // Fallback: modal de ingreso manual
+    mostrarModalIP();
+}
+
+function mostrarModalIP() {
+    // Creamos el modal si no existe
+    if (document.getElementById('ip-modal')) {
+        document.getElementById('ip-modal').classList.remove('hidden');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'ip-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="qr-card" style="width: 280px;">
+            <h3 style="margin-top:0">Ingresar IP de la PC</h3>
+            <p style="font-size:0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                En la PC, tocá <strong style="color:var(--primary)">Vincular Celular</strong> 
+                y anotá la IP que aparece debajo del QR.
+            </p>
+            <input 
+                type="text" 
+                id="ip-input"
+                placeholder=""
+                inputmode="url"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                style="
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 12px;
+                    border-radius: 10px;
+                    border: 1px solid var(--border);
+                    background: rgba(255,255,255,0.05);
+                    color: var(--text);
+                    font-size: 1rem;
+                    margin-bottom: 12px;
+                    text-align: center;
+                "
+            >
+            <div id="ip-error" style="color: #ff3b30; font-size: 0.8rem; margin-bottom: 8px; display:none;">
+                IP inválida. Ejemplo: 192.168.0.100:3000
+            </div>
+            <button class="btn-primary" style="width:100%; margin-bottom: 8px;" onclick="confirmarIPManual()">
+                Conectar
+            </button>
+            <button class="btn-secondary" style="width:100%;" onclick="document.getElementById('ip-modal').classList.add('hidden')">
+                Cancelar
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);   
+}
+
+function revelarIP() {
+    document.getElementById('ip-display').classList.remove('hidden');
+    document.getElementById('btn-revelar-ip').classList.add('hidden');
+}
+
+function confirmarIPManual() {
+    const raw = document.getElementById('ip-input').value.trim();
+    const errorDiv = document.getElementById('ip-error');
+
+    // Validación básica: debe tener formato IP o IP:puerto
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/;
+    if (!ipRegex.test(raw)) {
+        errorDiv.style.display = 'block';
+        return;
+    }
+    errorDiv.style.display = 'none';
+
+    procesarIP(raw);
+    document.getElementById('ip-modal').classList.add('hidden');
+}
+
+function procesarIP(rawData) {
+    let ipLimpia = rawData.replace("pitudrop:", "").trim();
+    if (!ipLimpia.startsWith("http")) {
+        ipLimpia = "http://" + ipLimpia;
+    }
+    localStorage.setItem('pitu_ip', ipLimpia);
+    SERVER_URL = ipLimpia;
+    actualizarBtnVincular();
+    alert("¡Conectado exitosamente!");
+    location.reload();
 }
 
 function uploadFile(file) {

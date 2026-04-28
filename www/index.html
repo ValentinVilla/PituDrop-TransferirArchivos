@@ -81,11 +81,27 @@
     <script src="script.js" defer></script>
     
     <div id="qr-modal" class="modal-overlay hidden">
-    <div class="qr-card">
-        <h3>Vincular Dispositivo</h3>
-        <div id="qrcode-canvas"></div>
-        <p>Escaneá este código desde la App móvil</p>
-        <button class="btn-primary" onclick="toggleQR()">Cerrar</button>
+        <div class="qr-card">
+            <h3>Vincular Dispositivo</h3>
+            <div id="qrcode-canvas"></div>
+            <p>Escaneá este código desde la App móvil</p>
+
+            <!-- IP oculta con botón para revelar -->
+            <div id="ip-reveal-container">
+                <button class="btn-secondary" id="btn-revelar-ip" onclick="revelarIP()">
+                    ¿No funcionó el escaneo? Ver IP
+                </button>
+                <p id="ip-display" class="hidden" style="
+                    font-family: monospace; 
+                    font-size: 1rem; 
+                    color: var(--primary);
+                    background: rgba(157,78,221,0.1);
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    margin: 8px auto 0;
+                ">Cargando IP...</p>
+            </div>
+            <button class="btn-primary" onclick="toggleQR()" style="margin-top: 15px;">Cerrar</button>
         </div>
     </div>
 </body>

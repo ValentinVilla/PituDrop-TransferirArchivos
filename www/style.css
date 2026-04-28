@@ -403,3 +403,9 @@ footer {
         margin-top: 80px; 
     }
 }
+
+@media (max-width: 380px) {
+    .nav-title {
+        display: none;
+    }
+}
