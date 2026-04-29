@@ -108,16 +108,27 @@ function toggleVincular() {
 }
 
 function actualizarBtnVincular() {
-    const btn = document.getElementById('btn-vincular');
-    if (!btn) return;
+    const btnVincular = document.getElementById('btn-vincular');
+    const btnPituMic = document.getElementById('btn-pitumic-mobile');
+    const btnDescargas = document.getElementById('btn-descargas');
+    
+    if (!btnVincular) return;
     
     const yaVinculado = !!localStorage.getItem('pitu_ip');
+    
     if (yaVinculado) {
-        btn.innerText = "Vinculado";
-        btn.style.color = "#34c759";
+        // ESTÁ VINCULADO: Mostramos todo
+        btnVincular.innerText = "Vinculado";
+        btnVincular.style.color = "#34c759";
+        
+        if (btnPituMic) btnPituMic.style.display = "inline-block";
+        if (btnDescargas) btnDescargas.style.display = "inline-block";
     } else {
-        btn.innerText = "Vincular PC";
-        btn.style.color = "var(--primary)";
+        btnVincular.innerText = "Vincular PC";
+        btnVincular.style.color = "var(--primary)";
+        
+        if (btnPituMic) btnPituMic.style.display = "none";
+        if (btnDescargas) btnDescargas.style.display = "none";
     }
 }
 

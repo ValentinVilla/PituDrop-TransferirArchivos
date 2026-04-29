@@ -145,6 +145,7 @@ app.get('/open-folder', (req, res) => {
     });
 });
 
+/*
 const startServer = () => {
     app.listen(PORT, '0.0.0.0', () => {
         const localUrl = `http://${ip.address()}:${PORT}`;
@@ -152,8 +153,42 @@ const startServer = () => {
         qrcode.generate(localUrl, { small: true });
     });
 };
+*/
 
-// Exportamos la función para que Electron la use
+///////////////////////////////////////////////////////////////////////////
+/////////////////////////////// MICROFONO /////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+const { WebSocketServer } = require('ws');
+
+// Guardamos referencia al server de express para compartirlo con WS
+let wss = null;
+
+const startServer = () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+        const localUrl = `http://${ip.address()}:${PORT}`;
+        console.log(`Servidor PituDrop en: ${localUrl}`);
+        qrcode.generate(localUrl, { small: true });
+    });
+
+    // WebSocket para el micrófono, en el mismo puerto
+    const wss = new WebSocketServer({ server, path: '/mic' });
+
+    wss.on('connection', (ws) => {
+        console.log('🎤 Celular conectado como micrófono');
+        
+        ws.on('message', (audioChunk) => {
+            wss.clients.forEach(client => {
+                if (client !== ws && client.readyState === 1) {
+                    client.send(audioChunk);
+                }
+            });
+        });
+
+        ws.on('close', () => console.log('🎤 Micrófono desconectado'));
+    });
+};
+
+/////////////////////////////////////////////////////////////////////////////
 module.exports = startServer;
 
 if (require.main === module) {

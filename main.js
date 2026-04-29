@@ -8,7 +8,7 @@ let isQuitting = false; // Flag para saber si queremos cerrar la app de verdad
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 450,
+    width: 750,
     height: 750,
     icon: path.join(__dirname, 'resources', 'icon.png'),
     autoHideMenuBar: true,
