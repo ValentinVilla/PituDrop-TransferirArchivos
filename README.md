@@ -9,7 +9,7 @@ Transferí archivos entre tu PC y tu celular de forma inalámbrica, rápida y si
 | Plataforma | Instalador |
 | :--- | :--- |
 | **Windows** | [![Windows](https://img.shields.io/badge/Descargar-Windows_EXE-9d4edd?style=for-the-badge&logo=windows)](https://github.com/ValentinVilla/PituDrop-TransferirArchivos/releases/download/v1.0.0/PituDrop.Setup.1.0.0.exe) |
-| **Android** | [![Android](https://img.shields.io/badge/Descargar-Android_APK-34c759?style=for-the-badge&logo=android)](https://github.com/ValentinVilla/PituDrop-TransferirArchivos/releases/download/v1.0.0/PituDrop1.1-Android.apk) |
+| **Android** | [![Android](https://img.shields.io/badge/Descargar-Android_APK-34c759?style=for-the-badge&logo=android)](https://github.com/ValentinVilla/PituDrop-TransferirArchivos/releases/download/v1.0.0/PituDrop-Android.apk) |
 
 > **⚠️ Nota:** Tanto Windows como Android te van a adverir. Solo hace clic en *"Más información"* y luego en *"Ejecutar de todas formas"* o algo por el estilo, como es una app UNDER se persiguen
 ---
